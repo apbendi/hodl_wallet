@@ -16,6 +16,8 @@ class App extends Component {
 	    storageValue: 0,
 	    deployDate: 0,
 	    withdrawDate: 0,
+	    accounts: [],
+	    hodlWalletInstance: null,
 	    web3: null
 	}
     }
@@ -41,17 +43,28 @@ class App extends Component {
 	const contract = require('truffle-contract');
 	const hodlWallet = contract(HodlWalletContract);
 	hodlWallet.setProvider(this.state.web3.currentProvider);
-	
-	var hodlWalletInstance;
 
 	this.state.web3.eth.getAccounts( (error, accounts) => {
+	    this.setState({accounts: accounts})
+	    
 	    hodlWallet.deployed().then( (instance) => {
-		hodlWalletInstance = instance;
-		return hodlWalletInstance.getDeployDate.call(accounts[0]);
-	    }).then( (result) => {
-		return this.setState({ deployDate: result.c[0] })
-	    })
-	})
+		this.setState({hodlWalletInstance: instance});
+		this.loadDeployedDate();
+		this.loadWithdrawDate();
+	    });
+	});
+    }
+
+    loadDeployedDate() {
+	this.state.hodlWalletInstance.getDeployDate.call(this.state.accounts[0]).then( result => {
+	    return this.setState({deployDate: result.c[0]});
+	});
+    }
+
+    loadWithdrawDate() {
+	this.state.hodlWalletInstance.getWithdrawDate.call(this.state.accounts[0]).then( result => {
+	    return this.setState({withdrawDate: result.c[0]});
+	});
     }
 
     instantiateContract() {
@@ -90,12 +103,9 @@ class App extends Component {
 		<main className="container">
 		<div className="pure-g">
 		<div className="pure-u-1-1">
-		<h1>Good to Go!</h1>
-		<p>Your Truffle Box is installed and ready.</p>
-		<h2>Smart Contract Example</h2>
-		<p>If your contracts compiled and migrated successfully, below will show a stored value of 5 (by default).</p>
-		<p>Try changing the value stored on <strong>line 59</strong> of App.js.</p>
-		<p>The stored value is: {this.state.deployDate}</p>
+		<h1>HODL Wallet</h1>
+		<p>Deployment Date: {this.state.deployDate}</p>
+		<p>Withdrawl Date: {this.state.withdrawDate}</p>
 		</div>
 		</div>
 		</main>
