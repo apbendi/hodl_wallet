@@ -51,6 +51,7 @@ class App extends Component {
 		this.setState({hodlWalletInstance: instance});
 		this.loadDeployedDate();
 		this.loadWithdrawDate();
+		this.deposit(5000000000000000000);
 	    });
 	});
     }
@@ -65,6 +66,10 @@ class App extends Component {
 	this.state.hodlWalletInstance.getWithdrawDate.call(this.state.accounts[0]).then( result => {
 	    return this.setState({withdrawDate: result.c[0]});
 	});
+    }
+
+    deposit(amount) {
+	this.state.hodlWalletInstance.hodlMe.sendTransaction({from: this.state.accounts[0], value: amount});
     }
 
     instantiateContract() {
