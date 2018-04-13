@@ -12,7 +12,7 @@ contract HodlWallet {
     hodler = msg.sender;
     deployDate = now;
     //withdrawDate = _withdrawDate;
-    withdrawDate = now + 1 days;
+    withdrawDate = now + 2 minutes;
   }
     
   function getDeployDate() public constant returns(uint) {

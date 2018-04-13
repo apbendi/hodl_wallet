@@ -23,6 +23,7 @@ class App extends Component {
 	}
 
 	this.handleDepositClick = this.handleDepositClick.bind(this);
+	this.withdraw = this.withdraw.bind(this);
     }
 
     componentWillMount() {
@@ -82,6 +83,12 @@ class App extends Component {
 	});
     }
 
+    withdraw() {
+	this.state.hodlWalletInstance.withdraw.sendTransaction({from: this.state.accounts[0]}).then( result => {
+	    this.loadHodlBalance();
+	});
+    }
+
     handleDepositClick() {
 	this.deposit(5000000000000000000);
     }
@@ -127,6 +134,7 @@ class App extends Component {
 		<p>Withdrawl Date: {this.state.withdrawDate}</p>
 		<p>Hodled balance: {this.state.hodlBalance}</p>
 		<button onClick={this.handleDepositClick}>HODL</button>
+		<button onClick={this.withdraw}>Withdraw</button>
 		</div>
 		</div>
 		</main>
