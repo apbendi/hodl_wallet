@@ -16,6 +16,7 @@ class App extends Component {
 	    deployDate: 0,
 	    withdrawDate: 0,
 	    hodlBalance: 0,
+	    depositAmount: 0,
 	    accounts: [],
 	    hodlWalletInstance: null,
 	    web3: null
@@ -23,6 +24,7 @@ class App extends Component {
 
 	this.handleDepositClick = this.handleDepositClick.bind(this);
 	this.withdraw = this.withdraw.bind(this);
+	this.handleAmountChange = this.handleAmountChange.bind(this);
     }
 
     componentWillMount() {
@@ -85,8 +87,13 @@ class App extends Component {
 	});
     }
 
-    handleDepositClick() {
-	this.deposit(5000000000000000000);
+    handleDepositClick(event) {
+	this.deposit(this.state.depositAmount);
+	this.setState({depositAmount: 0});
+    }
+
+    handleAmountChange(event) {
+	this.setState({depositAmount: event.target.value});
     }
 
     render() {
@@ -103,7 +110,12 @@ class App extends Component {
 		<p>Deployment Date: {this.state.deployDate}</p>
 		<p>Withdrawl Date: {this.state.withdrawDate}</p>
 		<p>Hodled balance: {this.state.hodlBalance}</p>
-		<button onClick={this.handleDepositClick}>HODL</button>
+		<form onSubmit={this.handleDepositClick}>
+		  <label>
+		    Amount: <input type="text" value={this.state.depositAmount} onChange={this.handleAmountChange} />
+		  </label>
+		  <input type="submit" value="HODL" />
+		</form>
 		<button onClick={this.withdraw}>Withdraw</button>
 		</div>
 		</div>
