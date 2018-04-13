@@ -16,10 +16,13 @@ class App extends Component {
 	    storageValue: 0,
 	    deployDate: 0,
 	    withdrawDate: 0,
+	    hodlBalance: 0,
 	    accounts: [],
 	    hodlWalletInstance: null,
 	    web3: null
 	}
+
+	this.handleDepositClick = this.handleDepositClick.bind(this);
     }
 
     componentWillMount() {
@@ -51,7 +54,6 @@ class App extends Component {
 		this.setState({hodlWalletInstance: instance});
 		this.loadDeployedDate();
 		this.loadWithdrawDate();
-		this.deposit(5000000000000000000);
 	    });
 	});
     }
@@ -68,8 +70,20 @@ class App extends Component {
 	});
     }
 
+    loadHodlBalance() {
+	this.state.hodlWalletInstance.getBalance.call(this.state.accounts[0]).then( result => {
+	    return this.setState({hodlBalance: result.c[0]});
+	});
+    }
+
     deposit(amount) {
-	this.state.hodlWalletInstance.hodlMe.sendTransaction({from: this.state.accounts[0], value: amount});
+	this.state.hodlWalletInstance.hodlMe.sendTransaction({from: this.state.accounts[0], value: amount}).then( result => {
+	    this.loadHodlBalance();
+	});
+    }
+
+    handleDepositClick() {
+	this.deposit(5000000000000000000);
     }
 
     instantiateContract() {
@@ -111,6 +125,8 @@ class App extends Component {
 		<h1>HODL Wallet</h1>
 		<p>Deployment Date: {this.state.deployDate}</p>
 		<p>Withdrawl Date: {this.state.withdrawDate}</p>
+		<p>Hodled balance: {this.state.hodlBalance}</p>
+		<button onClick={this.handleDepositClick}>HODL</button>
 		</div>
 		</div>
 		</main>
