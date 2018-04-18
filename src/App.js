@@ -66,7 +66,6 @@ class App extends Component {
 
     loadWithdrawDate() {
 	this.state.hodlWalletInstance.getWithdrawDate.call(this.state.accounts[0]).then( result => {
-	    console.log(result);
 	    return this.setState({withdrawDate: result.c[0]});
 	});
     }
@@ -78,18 +77,32 @@ class App extends Component {
     }
 
     deposit(amount) {
-	this.state.hodlWalletInstance.hodlMe.sendTransaction({from: this.state.accounts[0], value: amount}).then( result => {
-	    this.loadHodlBalance();
-	});
+	this.state.hodlWalletInstance
+	    .hodlMe
+	    .sendTransaction({from: this.state.accounts[0], value: amount})
+	    .then( txHash => {
+		console.log(txHash);
+		this.loadHodlBalance();
+	    })
+	    .catch( error => {
+		console.log(error);
+	    });
     }
 
     withdraw() {
-	this.state.hodlWalletInstance.withdraw.sendTransaction({from: this.state.accounts[0]}).then( result => {
-	    this.loadHodlBalance();
-	});
+	this.state.hodlWalletInstance
+	    .withdraw
+	    .sendTransaction({from: this.state.accounts[0]})
+	    .then( txHash => {
+		console.log(txHash);
+	    })
+	    .catch( error => {
+		console.log(error);
+	    });
     }
 
     handleDepositClick(event) {
+	event.preventDefault();
 	let weiDeposit = this.state.web3.toWei(this.state.depositAmount, 'ether');
 	this.deposit(weiDeposit);
 	this.setState({depositAmount: 0});
@@ -114,7 +127,6 @@ class App extends Component {
 	}
 
 	let ethString = this.state.web3.fromWei(weiBalance, 'ether').toString();
-
 	return ethString + " ETH";
     }
 
