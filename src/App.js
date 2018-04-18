@@ -24,6 +24,7 @@ class App extends Component {
 
 	this.handleDepositClick = this.handleDepositClick.bind(this);
 	this.withdraw = this.withdraw.bind(this);
+	this.deploy = this.deploy.bind(this);
 	this.handleAmountChange = this.handleAmountChange.bind(this);
     }
 
@@ -44,6 +45,7 @@ class App extends Component {
     instantiateHodlWallet() {
 	const contract = require('truffle-contract');
 	const hodlWallet = contract(HodlWalletContract);
+	console.log(HodlWalletContract);
 	hodlWallet.setProvider(this.state.web3.currentProvider);
 
 	this.state.web3.eth.getAccounts( (error, accounts) => {
@@ -122,6 +124,15 @@ class App extends Component {
 	    });
     }
 
+    deploy() {
+	const contract = require('truffle-contract');
+	var hodlWallet = contract(HodlWalletContract);	
+	hodlWallet.setProvider(this.state.web3.currentProvider);
+	var newContract = hodlWallet.new(0, {from: this.state.accounts[0]}); // todo: set gas
+
+	console.log(newContract);
+    }
+
     handleDepositClick(event) {
 	event.preventDefault();
 	let weiDeposit = this.state.web3.toWei(this.state.depositAmount, 'ether');
@@ -172,6 +183,7 @@ class App extends Component {
 		  <input type="submit" value="HODL" />
 		</form>
 		<button onClick={this.withdraw}>Withdraw</button>
+		<button onClick={this.deploy}>Deploy</button>
 		</div>
 		</div>
 		</main>
