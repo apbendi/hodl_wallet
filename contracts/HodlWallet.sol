@@ -1,7 +1,10 @@
 pragma solidity ^0.4.19;
 
 contract HodlWallet {
-    
+
+  event Deposit(uint value);
+  event Withdrawl(uint date);
+  
   uint deployDate;
   uint withdrawDate;
   address hodler;
@@ -12,7 +15,7 @@ contract HodlWallet {
     hodler = msg.sender;
     deployDate = now;
     //withdrawDate = _withdrawDate;
-    withdrawDate = now + 2 minutes;
+    withdrawDate = now + 20 minutes;
   }
     
   function getDeployDate() public constant returns(uint) {
@@ -28,11 +31,12 @@ contract HodlWallet {
   }
     
   function hodlMe() public isHodler isBeforeWithdraw payable {
-        
+    emit Deposit(msg.value);
   }
     
   function withdraw() public isHodler isAfterWithdraw {
     hodler.transfer(getBalance());
+    emit Withdrawl(now);
   }
     
   modifier isHodler() {

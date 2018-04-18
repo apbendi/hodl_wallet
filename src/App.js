@@ -51,10 +51,31 @@ class App extends Component {
 	    
 	    hodlWallet.deployed().then( (instance) => {
 		this.setState({hodlWalletInstance: instance});
+		this.watchForEvents();
 		this.loadDeployedDate();
 		this.loadWithdrawDate();
 		this.loadHodlBalance();
 	    });
+	});
+    }
+
+    watchForEvents() {
+	this.state.hodlWalletInstance.Deposit( (error, result) => {
+	    if (null != error) {
+		console.log(error);
+		return;
+	    }
+
+	    this.loadHodlBalance();
+	});
+
+	this.state.hodlWalletInstance.Withdrawl( (error, result) => {
+	    if (null != error) {
+		console.log(error);
+		return;
+	    }
+
+	    this.loadHodlBalance();
 	});
     }
 
