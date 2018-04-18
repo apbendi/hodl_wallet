@@ -15,7 +15,7 @@ class App extends Component {
 	    storageValue: 0,
 	    deployDate: 0,
 	    withdrawDate: 0,
-	    hodlBalance: 0,
+	    hodlBalance: null,
 	    depositAmount: 0,
 	    accounts: [],
 	    hodlWalletInstance: null,
@@ -53,6 +53,7 @@ class App extends Component {
 		this.setState({hodlWalletInstance: instance});
 		this.loadDeployedDate();
 		this.loadWithdrawDate();
+		this.loadHodlBalance();
 	    });
 	});
     }
@@ -65,13 +66,14 @@ class App extends Component {
 
     loadWithdrawDate() {
 	this.state.hodlWalletInstance.getWithdrawDate.call(this.state.accounts[0]).then( result => {
+	    console.log(result);
 	    return this.setState({withdrawDate: result.c[0]});
 	});
     }
 
     loadHodlBalance() {
 	this.state.hodlWalletInstance.getBalance.call(this.state.accounts[0]).then( result => {
-	    return this.setState({hodlBalance: result.c[0]});
+	    return this.setState({hodlBalance: result});
 	});
     }
 
@@ -88,7 +90,8 @@ class App extends Component {
     }
 
     handleDepositClick(event) {
-	this.deposit(this.state.depositAmount);
+	let weiDeposit = this.state.web3.toWei(this.state.depositAmount, 'ether');
+	this.deposit(weiDeposit);
 	this.setState({depositAmount: 0});
     }
 
@@ -96,23 +99,42 @@ class App extends Component {
 	this.setState({depositAmount: event.target.value});
     }
 
+    presentDate(unixDate) {
+	let date = new Date(1000*unixDate);
+	return date.toString();
+    }
+
+    presentBalance(weiBalance) {
+	if (null == this.state.web3) {
+	    return 'Loading...';
+	}
+
+	if (null == this.state.hodlBalance) {
+	    return "0 ETH";
+	}
+
+	let ethString = this.state.web3.fromWei(weiBalance, 'ether').toString();
+
+	return ethString + " ETH";
+    }
+
     render() {
 	return (
 		<div className="App">
 		<nav className="navbar pure-menu pure-menu-horizontal">
-		<a href="#" className="pure-menu-heading pure-menu-link">Truffle Box</a>
+		<a href="#" className="pure-menu-heading pure-menu-link">HODL Wallet</a>
 		</nav>
 
 		<main className="container">
 		<div className="pure-g">
 		<div className="pure-u-1-1">
-		<h1>HODL Wallet</h1>
-		<p>Deployment Date: {this.state.deployDate}</p>
-		<p>Withdrawl Date: {this.state.withdrawDate}</p>
-		<p>Hodled balance: {this.state.hodlBalance}</p>
+		<h2>Your HODL Wallet</h2>
+		<p>Deployment Date: {this.presentDate(this.state.deployDate)}</p>
+		<p>Withdrawl Date: {this.presentDate(this.state.withdrawDate)}</p>
+		<p>Hodled balance: {this.presentBalance(this.state.hodlBalance)}</p>
 		<form onSubmit={this.handleDepositClick}>
 		  <label>
-		    Amount: <input type="text" value={this.state.depositAmount} onChange={this.handleAmountChange} />
+		   Amount (ETH): <input type="text" value={this.state.depositAmount} onChange={this.handleAmountChange} />
 		  </label>
 		  <input type="submit" value="HODL" />
 		</form>
