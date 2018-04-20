@@ -11,7 +11,7 @@ contract HodlWalletFactory {
   }
 
   function deployWallet(uint _withdrawDate) public {
-    HodlWallet newWallet = new HodlWallet(_withdrawDate);
+    HodlWallet newWallet = new HodlWallet(_withdrawDate, msg.sender);
     emit LogDeployment(msg.sender, newWallet);
   }
 }

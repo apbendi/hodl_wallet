@@ -19,9 +19,8 @@ class App extends Component {
 	    hodlBalance: null,
 	    depositAmount: 0,
 	    accounts: [],
-	    hodlWalletInstance: null,
-	    hodlWalletContract: null,
 	    hodlFactoryInstance: null,
+	    hodlWalletInstance: null,
 	    web3: null
 	}
 
@@ -39,7 +38,6 @@ class App extends Component {
 		});
 		
 		this.instantiateHodlFactory();
-		this.instantiateHodlWallet();
 	    })
 	    .catch( error => {
 		console.log('Error finding web3.');
@@ -76,31 +74,40 @@ class App extends Component {
     listenForDeploys() {
 	this.state.hodlFactoryInstance
 	    .LogDeployment({hodler: this.state.accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
-	    .get( (error, result) => {
+	    .get( (error, deploys) => {
 		if (null != error) {
 		    console.log("Deploy Listen Error: " + error);
 		    return;
 		}
-		
-		console.log(result);
+
+		if (deploys.length <= 0) {
+		    console.log("No wallets");
+		    return;
+		}
+
+		console.log("Wallet Addr");
+		console.log(deploys[0].args.wallet);
+
+		this.instantiateHodlWallet(deploys[0].args.wallet);
 	    });
     }
 
-    instantiateHodlWallet() {
+    instantiateHodlWallet(address) {
 	const contract = require('truffle-contract');
-	this.setState({
-	    hodlWalletContract: contract(HodlWalletContract)
-	});
+	const wallet = contract(HodlWalletContract);
 
-	this.state.hodlWalletContract.setProvider(this.state.web3.currentProvider);
+	console.log(HodlWalletContract);
 
-	this.state.web3.eth.getAccounts( (error, accounts) => {
-	    if (null != error) {
-		console.log("Error getting accounts" + error);
-		return;
-	    }
+	wallet.setProvider(this.state.web3.currentProvider);
+	var firstWalletInstance = wallet.at(address);
 
-	    this.setState({accounts: accounts})
+	this.setState({hodlWalletInstance: firstWalletInstance});
+
+	this.watchForEvents();
+
+	this.loadDeployedDate();
+	this.loadWithdrawDate();
+	this.loadHodlBalance();
 	    
 	    // hodlWallet
 	    // 	.deployed()
@@ -115,7 +122,6 @@ class App extends Component {
 	    // 	.catch( error => {
 	    // 	    console.log(error);
 	    // 	});
-	});
     }
 
     watchForEvents() {
@@ -139,21 +145,39 @@ class App extends Component {
     }
 
     loadDeployedDate() {
-	this.state.hodlWalletInstance.getDeployDate.call(this.state.accounts[0]).then( result => {
-	    return this.setState({deployDate: result.c[0]});
-	});
+	this.state.hodlWalletInstance
+	    .getDeployDate
+	    .call(this.state.accounts[0])
+	    .then( result => {
+		return this.setState({deployDate: result.c[0]});
+	    })
+	    .catch( error => {
+		console.log(error);
+	    });
     }
 
     loadWithdrawDate() {
-	this.state.hodlWalletInstance.getWithdrawDate.call(this.state.accounts[0]).then( result => {
-	    return this.setState({withdrawDate: result.c[0]});
-	});
+	this.state.hodlWalletInstance
+	    .getWithdrawDate
+	    .call(this.state.accounts[0])
+	    .then( result => {
+		return this.setState({withdrawDate: result.c[0]});
+	    })
+	    .catch( error => {
+		console.log(error);
+	    });
     }
 
     loadHodlBalance() {
-	this.state.hodlWalletInstance.getBalance.call(this.state.accounts[0]).then( result => {
-	    return this.setState({hodlBalance: result});
-	});
+	this.state.hodlWalletInstance
+	    .getBalance
+	    .call(this.state.accounts[0])
+	    .then( result => {
+		return this.setState({hodlBalance: result});
+	    })
+	    .catch( error => {
+		console.log(error);
+	    });
     }
 
     deposit(amount) {

@@ -9,13 +9,17 @@ contract HodlWallet {
   uint withdrawDate;
   address hodler;
     
-  function HodlWallet(uint _withdrawDate) public {
+  function HodlWallet(uint _withdrawDate, address _hodler) public {
     //require(_withdrawDate > now + 1 days);
-    
-    hodler = msg.sender;
+
     deployDate = now;
+    hodler = _hodler;
     //withdrawDate = _withdrawDate;
     withdrawDate = now + 20 minutes;
+  }
+
+  function getHodler() public constant returns(address) {
+    return hodler;
   }
     
   function getDeployDate() public constant returns(uint) {
