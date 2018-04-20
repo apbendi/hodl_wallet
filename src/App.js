@@ -62,7 +62,8 @@ class App extends Component {
 		.deployed()
 		.then( instance => {
 		    console.log(instance);
-		    this.setState({hodlFactoryInstance: instance});		    
+		    this.setState({hodlFactoryInstance: instance});
+		    this.getPastDeploys();
 		    this.listenForDeploys();
 		})
 		.catch( error => {
@@ -71,7 +72,7 @@ class App extends Component {
 	});
     }
 
-    listenForDeploys() {
+    getPastDeploys() {
 	this.state.hodlFactoryInstance
 	    .LogDeployment({hodler: this.state.accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
 	    .get( (error, deploys) => {
@@ -89,6 +90,18 @@ class App extends Component {
 		console.log(deploys[0].args.wallet);
 
 		this.instantiateHodlWallet(deploys[0].args.wallet);
+	    });
+    }
+
+    listenForDeploys() {
+	this.state.hodlFactoryInstance
+	    .LogDeployment({hodler: this.state.accounts[0]}, (error, result) => {
+		if (error != null) {
+		    console.log(error);
+		    return;
+		}
+
+		this.getPastDeploys();
 	    });
     }
 
