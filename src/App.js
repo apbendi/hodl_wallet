@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import HodlWalletContract from '../build/contracts/HodlWallet.json'
+import HodlWalletFactory from '../build/contracts/HodlWalletFactory.json'
 import getWeb3 from './utils/getWeb3'
 
 import './css/oswald.css'
@@ -19,6 +20,8 @@ class App extends Component {
 	    depositAmount: 0,
 	    accounts: [],
 	    hodlWalletInstance: null,
+	    hodlWalletContract: null,
+	    hodlFactoryInstance: null,
 	    web3: null
 	}
 
@@ -30,34 +33,86 @@ class App extends Component {
 
     componentWillMount() {
 	getWeb3
-	    .then(results => {
+	    .then( results => {
 		this.setState({
 		    web3: results.web3
-		})
-
+		});
+		
+		this.instantiateHodlFactory();
 		this.instantiateHodlWallet();
 	    })
-	    .catch(() => {
-		console.log('Error finding web3.')
+	    .catch( error => {
+		console.log('Error finding web3.');
+		console.log(error);
 	    })
+    }
+
+    instantiateHodlFactory() {
+	const contract = require('truffle-contract');
+	const factory = contract(HodlWalletFactory);
+	factory.setProvider(this.state.web3.currentProvider);
+	
+	this.state.web3.eth.getAccounts( (error, accounts) => {
+	    if (null != error) {
+		console.log("Error getting accounts: " + error);
+		return;
+	    }
+	    
+	    this.setState({accounts: accounts});
+
+	    factory
+		.deployed()
+		.then( instance => {
+		    console.log(instance);
+		    this.setState({hodlFactoryInstance: instance});		    
+		    this.listenForDeploys();
+		})
+		.catch( error => {
+		    console.log("Error finding factory: " + error);
+		});	    
+	});
+    }
+
+    listenForDeploys() {
+	this.state.hodlFactoryInstance.LogDeployment( (error, result) => {
+	    if (null != error) {
+		console.log("Deploy Listen Error: " + error);
+		return;
+	    }
+
+	    console.log(result);
+	});
     }
 
     instantiateHodlWallet() {
 	const contract = require('truffle-contract');
-	const hodlWallet = contract(HodlWalletContract);
-	console.log(HodlWalletContract);
-	hodlWallet.setProvider(this.state.web3.currentProvider);
+	this.setState({
+	    hodlWalletContract: contract(HodlWalletContract)
+	});
+
+	this.state.hodlWalletContract.setProvider(this.state.web3.currentProvider);
 
 	this.state.web3.eth.getAccounts( (error, accounts) => {
+	    if (null != error) {
+		console.log("Error getting accounts" + error);
+		return;
+	    }
+
 	    this.setState({accounts: accounts})
 	    
-	    hodlWallet.deployed().then( (instance) => {
-		this.setState({hodlWalletInstance: instance});
-		this.watchForEvents();
-		this.loadDeployedDate();
-		this.loadWithdrawDate();
-		this.loadHodlBalance();
-	    });
+	    // hodlWallet
+	    // 	.deployed()
+	    // 	.then( instance => {
+	    // 	    console.log("Deployed");
+	    // 	    this.setState({hodlWalletInstance: instance});
+	    // 	    this.watchForEvents();
+	    // 	    this.loadDeployedDate();
+	    // 	    this.loadWithdrawDate();
+	    // 	    this.loadHodlBalance();
+	    // 	})
+	    // 	.catch( error => {
+	    // 	    console.log(error);
+	    // 	});
 	});
     }
 
@@ -125,12 +180,15 @@ class App extends Component {
     }
 
     deploy() {
-	const contract = require('truffle-contract');
-	var hodlWallet = contract(HodlWalletContract);	
-	hodlWallet.setProvider(this.state.web3.currentProvider);
-	var newContract = hodlWallet.new(0, {from: this.state.accounts[0]}); // todo: set gas
-
-	console.log(newContract);
+	this.state.hodlFactoryInstance
+	    .deployWallet
+	    .sendTransaction(0, {from: this.state.accounts[0]})
+	    .then( txHash => {
+		console.log(txHash);
+	    })
+	    .catch( error => {
+		console.log("Deployment Error: " + error);
+	    });
     }
 
     handleDepositClick(event) {

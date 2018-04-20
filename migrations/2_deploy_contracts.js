@@ -1,5 +1,5 @@
-var HodlWallet = artifacts.require("./HodlWallet.sol");
+var HodlWalletFactory = artifacts.require("./HodlWalletFactory.sol");
 
 module.exports = function(deployer) {
-    deployer.deploy(HodlWallet, 0);
+    deployer.deploy(HodlWalletFactory);
 };
