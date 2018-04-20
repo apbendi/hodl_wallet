@@ -74,14 +74,16 @@ class App extends Component {
     }
 
     listenForDeploys() {
-	this.state.hodlFactoryInstance.LogDeployment( (error, result) => {
-	    if (null != error) {
-		console.log("Deploy Listen Error: " + error);
-		return;
-	    }
-
-	    console.log(result);
-	});
+	this.state.hodlFactoryInstance
+	    .LogDeployment({hodler: this.state.accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
+	    .get( (error, result) => {
+		if (null != error) {
+		    console.log("Deploy Listen Error: " + error);
+		    return;
+		}
+		
+		console.log(result);
+	    });
     }
 
     instantiateHodlWallet() {
