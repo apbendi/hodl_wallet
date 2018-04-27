@@ -66,3 +66,11 @@ code {
   height: 16px;
   margin-right: 10px;
 }
+
+/* 
+   react-datepicker override
+   see: https://github.com/Hacker0x01/react-datepicker/issues/1286
+ */
+.react-datepicker__time-list {
+  padding: 0;
+}

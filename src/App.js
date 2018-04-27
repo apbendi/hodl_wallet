@@ -1,12 +1,16 @@
-import React, { Component } from 'react'
-import HodlWalletContract from '../build/contracts/HodlWallet.json'
-import HodlWalletFactory from '../build/contracts/HodlWalletFactory.json'
-import getWeb3 from './utils/getWeb3'
+import React, { Component } from 'react';
+import DatePicker from 'react-datepicker';
+import moment from 'moment';
 
-import './css/oswald.css'
-import './css/open-sans.css'
-import './css/pure-min.css'
-import './App.css'
+import HodlWalletContract from '../build/contracts/HodlWallet.json';
+import HodlWalletFactory from '../build/contracts/HodlWalletFactory.json';
+import getWeb3 from './utils/getWeb3';
+
+import './css/oswald.css';
+import './css/open-sans.css';
+import './css/pure-min.css';
+import 'react-datepicker/dist/react-datepicker.css';
+import './App.css';
 
 class App extends Component {
     constructor(props) {
@@ -18,6 +22,7 @@ class App extends Component {
 	    withdrawDate: 0,
 	    hodlBalance: null,
 	    depositAmount: 0,
+	    selectedDate: moment(),
 	    accounts: [],
 	    hodlFactoryInstance: null,
 	    hodlWalletInstance: null,
@@ -28,6 +33,7 @@ class App extends Component {
 	this.withdraw = this.withdraw.bind(this);
 	this.deploy = this.deploy.bind(this);
 	this.handleAmountChange = this.handleAmountChange.bind(this);
+	this.dateChange = this.dateChange.bind(this);
     }
 
     componentWillMount() {
@@ -108,33 +114,15 @@ class App extends Component {
     instantiateHodlWallet(address) {
 	const contract = require('truffle-contract');
 	const wallet = contract(HodlWalletContract);
-
-	console.log(HodlWalletContract);
-
 	wallet.setProvider(this.state.web3.currentProvider);
-	var firstWalletInstance = wallet.at(address);
 
+	var firstWalletInstance = wallet.at(address);
 	this.setState({hodlWalletInstance: firstWalletInstance});
 
 	this.watchForEvents();
-
 	this.loadDeployedDate();
 	this.loadWithdrawDate();
-	this.loadHodlBalance();
-	    
-	    // hodlWallet
-	    // 	.deployed()
-	    // 	.then( instance => {
-	    // 	    console.log("Deployed");
-	    // 	    this.setState({hodlWalletInstance: instance});
-	    // 	    this.watchForEvents();
-	    // 	    this.loadDeployedDate();
-	    // 	    this.loadWithdrawDate();
-	    // 	    this.loadHodlBalance();
-	    // 	})
-	    // 	.catch( error => {
-	    // 	    console.log(error);
-	    // 	});
+	this.loadHodlBalance();	    
     }
 
     watchForEvents() {
@@ -219,7 +207,8 @@ class App extends Component {
     }
 
     deploy() {
-	this.state.hodlFactoryInstance
+	console.log(this.state.accounts[0]);
+	this.state.hodlFactoryInstance	
 	    .deployWallet
 	    .sendTransaction(0, {from: this.state.accounts[0]})
 	    .then( txHash => {
@@ -239,6 +228,10 @@ class App extends Component {
 
     handleAmountChange(event) {
 	this.setState({depositAmount: event.target.value});
+    }
+
+    dateChange(date) {
+	this.setState({ selectedDate: date });
     }
 
     presentDate(unixDate) {
@@ -280,6 +273,17 @@ class App extends Component {
 		  <input type="submit" value="HODL" />
 		</form>
 		<button onClick={this.withdraw}>Withdraw</button>
+		<p />
+		<DatePicker 
+	            selected={this.state.selectedDate} 
+	            onChange={this.dateChange} 
+	            showTimeSelect
+	            timeFormat="HH:mm"
+	            timeInterval={15}
+	            timeCaption="Time"
+	            dateFormat="LLL"
+	            minDate={moment()} 
+		/>
 		<button onClick={this.deploy}>Deploy</button>
 		</div>
 		</div>
