@@ -10,12 +10,11 @@ contract HodlWallet {
   address hodler;
     
   function HodlWallet(uint _withdrawDate, address _hodler) public {
-    //require(_withdrawDate > now + 1 days);
+    require(_withdrawDate > now + 10 minutes);
 
     deployDate = now;
     hodler = _hodler;
-    //withdrawDate = _withdrawDate;
-    withdrawDate = now + 20 minutes;
+    withdrawDate = _withdrawDate;
   }
 
   function getHodler() public constant returns(address) {

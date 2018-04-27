@@ -207,10 +207,11 @@ class App extends Component {
     }
 
     deploy() {
-	console.log(this.state.accounts[0]);
+	console.log(this.state.selectedDate);
+	let withdrawDate = this.state.selectedDate.unix();
 	this.state.hodlFactoryInstance	
 	    .deployWallet
-	    .sendTransaction(0, {from: this.state.accounts[0]})
+	    .sendTransaction(withdrawDate, {from: this.state.accounts[0]})
 	    .then( txHash => {
 		console.log(txHash);
 	    })
