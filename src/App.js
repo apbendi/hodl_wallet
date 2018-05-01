@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import InstanceInterface from './InstanceInterface';
+
 import DatePicker from 'react-datepicker';
 import moment from 'moment';
 
@@ -14,7 +16,7 @@ import './App.css';
 
 class App extends Component {
     constructor(props) {
-	super(props)
+	super(props);
 
 	this.state = {
 	    storageValue: 0,
@@ -27,12 +29,11 @@ class App extends Component {
 	    hodlFactoryInstance: null,
 	    hodlWalletInstance: null,
 	    web3: null
-	}
+	};
 
 	this.handleDepositClick = this.handleDepositClick.bind(this);
 	this.withdraw = this.withdraw.bind(this);
 	this.deploy = this.deploy.bind(this);
-	this.handleAmountChange = this.handleAmountChange.bind(this);
 	this.dateChange = this.dateChange.bind(this);
     }
 
@@ -48,7 +49,7 @@ class App extends Component {
 	    .catch( error => {
 		console.log('Error finding web3.');
 		console.log(error);
-	    })
+	    });
     }
 
     instantiateHodlFactory() {
@@ -227,10 +228,6 @@ class App extends Component {
 	this.setState({depositAmount: 0});
     }
 
-    handleAmountChange(event) {
-	this.setState({depositAmount: event.target.value});
-    }
-
     dateChange(date) {
 	this.setState({ selectedDate: date });
     }
@@ -254,42 +251,63 @@ class App extends Component {
     }
 
     render() {
-	return (
-		<div className="App">
-		<nav className="navbar pure-menu pure-menu-horizontal">
-		<a href="#" className="pure-menu-heading pure-menu-link">HODL Wallet</a>
-		</nav>
+	let interfaceBody;
 
-		<main className="container">
-		<div className="pure-g">
-		<div className="pure-u-1-1">
-		<h2>Your HODL Wallet</h2>
-		<p>Deployment Date: {this.presentDate(this.state.deployDate)}</p>
-		<p>Withdrawl Date: {this.presentDate(this.state.withdrawDate)}</p>
-		<p>Hodled balance: {this.presentBalance(this.state.hodlBalance)}</p>
-		<form onSubmit={this.handleDepositClick}>
-		  <label>
-		   Amount (ETH): <input type="text" value={this.state.depositAmount} onChange={this.handleAmountChange} />
-		  </label>
-		  <input type="submit" value="HODL" />
-		</form>
-		<button onClick={this.withdraw}>Withdraw</button>
-		<p />
-		<DatePicker 
-	            selected={this.state.selectedDate} 
+	if (null === this.state.hodlWalletInstance) {
+	    interfaceBody = (
+		<div>
+		  <h2>Deploy Your Hodl Wallet</h2>
+		  Withdraw Date: <p />
+		  <DatePicker
+		    selected={this.state.selectedDate} 
 	            onChange={this.dateChange} 
 	            showTimeSelect
 	            timeFormat="HH:mm"
 	            timeInterval={15}
 	            timeCaption="Time"
-	            dateFormat="LLL"
-	            minDate={moment()} 
-		/>
-		<button onClick={this.deploy}>Deploy</button>
+		    dateFormat="LLL"
+		    minDate={moment()} 
+		    />
+		  <p />
+		  <button onClick={this.deploy}>Deploy</button>
 		</div>
+	    );
+	} else {
+	    interfaceBody = (
+		<div>
+		  <h2>Your HODL Wallet</h2>
+		  <InstanceInterface 
+		    web3={this.state.web3}
+		    deployDate={this.state.deployDate}
+		    withdrawDate={this.state.withdrawDate}
+		    hodlBalance={this.state.hodlBalance}
+		    doDeposit={ amount => { 
+			this.deposit(amount);
+			}
+		    }
+		    doWithdraw={ () => {
+			this.withdraw();
+			}
+		    }
+		    />
 		</div>
-		</main>
+	    );
+	}
+
+	return (
+	    <div className="App">
+	      <nav className="navbar pure-menu pure-menu-horizontal">
+		<a href="#" className="pure-menu-heading pure-menu-link">HODL Wallet</a>
+	      </nav>
+	      
+	      <main className="container">
+		<div className="pure-g">
+		  <div className="pure-u-1-1">
+		    {interfaceBody}
+		  </div>
 		</div>
+	      </main>
+	    </div>
 	);
     }
 }
