@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import InstanceInterface from './InstanceInterface';
-
-import DatePicker from 'react-datepicker';
-import moment from 'moment';
+import WalletDeployer from './WalletDeployer';
 
 import HodlWalletContract from '../build/contracts/HodlWallet.json';
 import HodlWalletFactory from '../build/contracts/HodlWalletFactory.json';
@@ -24,7 +22,6 @@ class App extends Component {
 	    withdrawDate: 0,
 	    hodlBalance: null,
 	    depositAmount: 0,
-	    selectedDate: moment(),
 	    accounts: [],
 	    hodlFactoryInstance: null,
 	    hodlWalletInstance: null,
@@ -34,7 +31,6 @@ class App extends Component {
 	this.handleDepositClick = this.handleDepositClick.bind(this);
 	this.withdraw = this.withdraw.bind(this);
 	this.deploy = this.deploy.bind(this);
-	this.dateChange = this.dateChange.bind(this);
     }
 
     componentWillMount() {
@@ -207,12 +203,10 @@ class App extends Component {
 	    });
     }
 
-    deploy() {
-	console.log(this.state.selectedDate);
-	let withdrawDate = this.state.selectedDate.unix();
+    deploy(withdrawDateUnix) {
 	this.state.hodlFactoryInstance	
 	    .deployWallet
-	    .sendTransaction(withdrawDate, {from: this.state.accounts[0]})
+	    .sendTransaction(withdrawDateUnix, {from: this.state.accounts[0]})
 	    .then( txHash => {
 		console.log(txHash);
 	    })
@@ -226,10 +220,6 @@ class App extends Component {
 	let weiDeposit = this.state.web3.toWei(this.state.depositAmount, 'ether');
 	this.deposit(weiDeposit);
 	this.setState({depositAmount: 0});
-    }
-
-    dateChange(date) {
-	this.setState({ selectedDate: date });
     }
 
     presentDate(unixDate) {
@@ -255,22 +245,7 @@ class App extends Component {
 
 	if (null === this.state.hodlWalletInstance) {
 	    interfaceBody = (
-		<div>
-		  <h2>Deploy Your Hodl Wallet</h2>
-		  Withdraw Date: <p />
-		  <DatePicker
-		    selected={this.state.selectedDate} 
-	            onChange={this.dateChange} 
-	            showTimeSelect
-	            timeFormat="HH:mm"
-	            timeInterval={15}
-	            timeCaption="Time"
-		    dateFormat="LLL"
-		    minDate={moment()} 
-		    />
-		  <p />
-		  <button onClick={this.deploy}>Deploy</button>
-		</div>
+		  <WalletDeployer doDeploy={ withdrawDate => { this.deploy(withdrawDate); } } />
 	    );
 	} else {
 	    interfaceBody = (
