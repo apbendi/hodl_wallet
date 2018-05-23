@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import InstanceInterface from './InstanceInterface';
 import WalletDeployer from './WalletDeployer';
+import WalletSelector from './WalletSelector';
 
 import HodlWalletContract from '../build/contracts/HodlWallet.json';
 import HodlWalletFactory from '../build/contracts/HodlWalletFactory.json';
@@ -12,26 +13,45 @@ import './css/pure-min.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import './App.css';
 
+class HodlInstance {
+
+    constructor(address) {
+	this.address = address;
+	this.balance = null;
+	this.deployDate = null;
+	this.withdrawDate = null;
+	this.contract = null;
+    }
+}
+
 class App extends Component {
     constructor(props) {
 	super(props);
 
 	this.state = {
 	    storageValue: 0,
-	    deployDate: 0,
-	    withdrawDate: 0,
-	    hodlBalance: null,
 	    depositAmount: 0,
+	    hodlWallets: [],
+	    selectedHodlIndex: -1,
 	    accounts: [],
 	    hodlFactoryInstance: null,
-	    hodlWalletInstance: null,
 	    web3: null
 	};
-
-	this.handleDepositClick = this.handleDepositClick.bind(this);
-	this.withdraw = this.withdraw.bind(this);
-	this.deploy = this.deploy.bind(this);
     }
+
+    // GETTERS
+
+    get selectedHodl() {
+	console.assert(this.state.selectedHodlIndex < this.state.hodlWallets.length, "Illegal Hodl Index: " + this.state.selectedHodlIndex);
+
+	if (this.state.selectedHodlIndex < 0 || this.state.selectedHodlIndex >= this.state.hodlWallets.length) {
+	    return null;
+	}
+
+	return this.state.hodlWallets[this.state.selectedHodlIndex];
+    }
+
+    // LIFECYCLE
 
     componentWillMount() {
 	getWeb3
@@ -47,6 +67,8 @@ class App extends Component {
 		console.log(error);
 	    });
     }
+
+    // SETUP & DATA LOADING
 
     instantiateHodlFactory() {
 	const contract = require('truffle-contract');
@@ -89,12 +111,58 @@ class App extends Component {
 		    return;
 		}
 
-		console.log("Wallet Addr");
-		console.log(deploys[0].args.wallet);
+		let hodls = deploys.map( deploy => {
+		    let address = deploy.args.wallet;
+		    return new HodlInstance(address);
+		});
+		this.setState({hodlWallets: hodls, selectedHodlIndex: 0});
 
-		this.instantiateHodlWallet(deploys[0].args.wallet);
+		this.instantiateHodlContracts();
+		this.loadHodlWalletsData();
+		this.listenForHodlEvents();
 	    });
     }
+
+    instantiateHodlContracts() {
+	const contract = require('truffle-contract');
+	const wallet = contract(HodlWalletContract);
+	wallet.setProvider(this.state.web3.currentProvider);
+
+	let contractHodls =
+	    this.state.hodlWallets.map( hodl => {
+		let newHodl = Object.assign({}, hodl);
+		newHodl.contract = wallet.at(hodl.address);
+		return newHodl;
+	    });
+
+	this.setState({hodlWallets: contractHodls});
+    }
+
+    loadHodlWalletsData() {
+	for (var i = 0; i < this.state.hodlWallets.length; i++) {
+	    this.loadWalletAtIndex(i);
+	}
+    }
+
+    loadWalletAtIndex(index) {
+	let contract = this.state.hodlWallets[index].contract;
+
+	contract
+	    .getAllState
+	    .call(this.state.accounts[0])
+	    .then( result => {
+		let wallets = this.state.hodlWallets.slice();
+		wallets[index].deployDate = result[0].c[0];
+		wallets[index].withdrawDate = result[1].c[0];
+		wallets[index].balance = result[2];
+		return this.setState({hodlWallets: wallets});
+	    })
+	    .catch( error => {
+		console.log(error);
+	    });
+    }
+
+    // EVENT LISTENING
 
     listenForDeploys() {
 	this.state.hodlFactoryInstance
@@ -108,100 +176,27 @@ class App extends Component {
 	    });
     }
 
-    instantiateHodlWallet(address) {
-	const contract = require('truffle-contract');
-	const wallet = contract(HodlWalletContract);
-	wallet.setProvider(this.state.web3.currentProvider);
-
-	var firstWalletInstance = wallet.at(address);
-	this.setState({hodlWalletInstance: firstWalletInstance});
-
-	this.watchForEvents();
-	this.loadDeployedDate();
-	this.loadWithdrawDate();
-	this.loadHodlBalance();	    
-    }
-
-    watchForEvents() {
-	this.state.hodlWalletInstance.Deposit( (error, result) => {
+    listenForHodlEvents() {
+	this.selectedHodl.contract.Deposit( (error, result) => {
 	    if (null != error) {
 		console.log(error);
 		return;
 	    }
 
-	    this.loadHodlBalance();
+	    this.loadHodlWalletsData();
 	});
 
-	this.state.hodlWalletInstance.Withdrawl( (error, result) => {
+	this.selectedHodl.contract.Withdrawl( (error, result) => {
 	    if (null != error) {
 		console.log(error);
 		return;
 	    }
 
-	    this.loadHodlBalance();
+	    this.loadHodlWalletsData();
 	});
     }
 
-    loadDeployedDate() {
-	this.state.hodlWalletInstance
-	    .getDeployDate
-	    .call(this.state.accounts[0])
-	    .then( result => {
-		return this.setState({deployDate: result.c[0]});
-	    })
-	    .catch( error => {
-		console.log(error);
-	    });
-    }
-
-    loadWithdrawDate() {
-	this.state.hodlWalletInstance
-	    .getWithdrawDate
-	    .call(this.state.accounts[0])
-	    .then( result => {
-		return this.setState({withdrawDate: result.c[0]});
-	    })
-	    .catch( error => {
-		console.log(error);
-	    });
-    }
-
-    loadHodlBalance() {
-	this.state.hodlWalletInstance
-	    .getBalance
-	    .call(this.state.accounts[0])
-	    .then( result => {
-		return this.setState({hodlBalance: result});
-	    })
-	    .catch( error => {
-		console.log(error);
-	    });
-    }
-
-    deposit(amount) {
-	this.state.hodlWalletInstance
-	    .hodlMe
-	    .sendTransaction({from: this.state.accounts[0], value: amount})
-	    .then( txHash => {
-		console.log(txHash);
-		this.loadHodlBalance();
-	    })
-	    .catch( error => {
-		console.log(error);
-	    });
-    }
-
-    withdraw() {
-	this.state.hodlWalletInstance
-	    .withdraw
-	    .sendTransaction({from: this.state.accounts[0]})
-	    .then( txHash => {
-		console.log(txHash);
-	    })
-	    .catch( error => {
-		console.log(error);
-	    });
-    }
+    // CONTRACT ACTIONS
 
     deploy(withdrawDateUnix) {
 	this.state.hodlFactoryInstance	
@@ -215,35 +210,39 @@ class App extends Component {
 	    });
     }
 
-    handleDepositClick(event) {
-	event.preventDefault();
-	let weiDeposit = this.state.web3.toWei(this.state.depositAmount, 'ether');
-	this.deposit(weiDeposit);
-	this.setState({depositAmount: 0});
+    deposit(amount) {
+	this.selectedHodl
+	    .contract
+	    .hodlMe
+	    .sendTransaction({from: this.state.accounts[0], value: amount})
+	    .then( txHash => {
+		console.log(txHash);
+		this.loadHodlWalletsData();
+	    })
+	    .catch( error => {
+		console.log(error);
+	    });
     }
 
-    presentDate(unixDate) {
-	let date = new Date(1000*unixDate);
-	return date.toString();
+    withdraw() {
+	this.selectedHodl
+	    .contract
+	    .withdraw
+	    .sendTransaction({from: this.state.accounts[0]})
+	    .then( txHash => {
+		console.log(txHash);
+	    })
+	    .catch( error => {
+		console.log(error);
+	    });
     }
 
-    presentBalance(weiBalance) {
-	if (null == this.state.web3) {
-	    return 'Loading...';
-	}
-
-	if (null == this.state.hodlBalance) {
-	    return "0 ETH";
-	}
-
-	let ethString = this.state.web3.fromWei(weiBalance, 'ether').toString();
-	return ethString + " ETH";
-    }
+    // RENDERING
 
     render() {
 	let interfaceBody;
 
-	if (null === this.state.hodlWalletInstance) {
+	if (null == this.selectedHodl) {
 	    interfaceBody = (
 		  <WalletDeployer doDeploy={ withdrawDate => { this.deploy(withdrawDate); } } />
 	    );
@@ -253,17 +252,13 @@ class App extends Component {
 		  <h2>Your HODL Wallet</h2>
 		  <InstanceInterface 
 		    web3={this.state.web3}
-		    deployDate={this.state.deployDate}
-		    withdrawDate={this.state.withdrawDate}
-		    hodlBalance={this.state.hodlBalance}
+		    hodlInstance={this.selectedHodl}
 		    doDeposit={ amount => { 
 			this.deposit(amount);
-			}
-		    }
+		    }}
 		    doWithdraw={ () => {
 			this.withdraw();
-			}
-		    }
+		    }}
 		    />
 		</div>
 	    );
@@ -278,6 +273,12 @@ class App extends Component {
 	      <main className="container">
 		<div className="pure-g">
 		  <div className="pure-u-1-1">
+		    <WalletSelector 
+		      hodlWallets={this.state.hodlWallets} 
+		      udpateSelection={ index => {
+			  this.setState({selectedHodlIndex: index});
+		      }}
+		      />
 		    {interfaceBody}
 		  </div>
 		</div>
@@ -287,4 +288,4 @@ class App extends Component {
     }
 }
 
-export default App
+export default App;

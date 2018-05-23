@@ -33,6 +33,11 @@ class InstanceInterface extends Component {
 	return !isNaN(parseFloat(n)) && isFinite(n);
     }
 
+    isPastWithdraw() {
+	let currentUnixDate = Date.now() / 1000 + 30;
+	return currentUnixDate > this.props.hodlInstance.withdrawDate;
+    }
+
     handleAmountChange(event) {
 	event.preventDefault();
 
@@ -66,16 +71,16 @@ class InstanceInterface extends Component {
     render() {
 	return (
 	    <div>
-	      <p>Deployment Date: {this.presentDate(this.props.deployDate)}</p>
-	      <p>Withdrawl Date: {this.presentDate(this.props.withdrawDate)}</p>
-	      <p>Hodled balance: {this.presentBalance(this.props.hodlBalance)}</p>
+	      <p>Deployment Date: {this.presentDate(this.props.hodlInstance.deployDate)}</p>
+	      <p>Withdrawl Date: {this.presentDate(this.props.hodlInstance.withdrawDate)}</p>
+	      <p>Hodled balance: {this.presentBalance(this.props.hodlInstance.balance)}</p>
 	      <form onSubmit={this.handleHodl}>
 		<label>
 		  Amount (ETH): <input type="text" value={this.state.depositAmount} onChange={this.handleAmountChange} onBlur={this.handleAmountLoseFocus}/>
 		</label>
-		<input type="submit" value="HODL" />
+		<input type="submit" value="HODL" disabled={this.isPastWithdraw()} />
 	      </form>
-		<button onClick={this.handleWithdraw}>Withdraw</button>
+	      <button onClick={this.handleWithdraw} disabled={!this.isPastWithdraw()}>Withdraw</button>
 	      <p />
 	    </div>
 	);

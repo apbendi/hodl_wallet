@@ -32,6 +32,10 @@ contract HodlWallet {
   function getBalance() public constant returns(uint) {
     return address(this).balance;
   }
+
+  function getAllState() public constant returns (uint, uint, uint) {
+    return (deployDate, withdrawDate, getBalance());
+  }
     
   function hodlMe() public isHodler isBeforeWithdraw payable {
     emit Deposit(msg.value);
