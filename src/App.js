@@ -251,7 +251,7 @@ class App extends Component {
 		<div>
 		  <h2>Your HODL Wallet</h2>
 		  <InstanceInterface 
-		    web3={this.state.web3}
+		    //web3={this.state.web3}
 		    hodlInstance={this.selectedHodl}
 		    doDeposit={ amount => { 
 			this.deposit(amount);

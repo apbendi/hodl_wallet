@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Presenters from './utils/Presenters';
 
 class WalletSelector extends Component {
 
@@ -26,7 +27,8 @@ class WalletSelector extends Component {
 	    <div style={ {margin: '1em'} }>
 	      {this.props.hodlWallets
 		  .map( (hodl) => <div key={hodl.address} onClick={this.handleWalletClick} style={ {backgroundColor: 'grey'} }>
-			{hodl.address}, {hodl.deployDate}, {hodl.withdrawDate}
+			{Presenters.presentAddress(hodl.address)}, {Presenters.presentDate(hodl.deployDate)},
+			    {' '}{Presenters.presentDate(hodl.withdrawDate)}, {Presenters.presentBalance(hodl.balance)}
 			</div>
 	      )}
 		<div style={ {backgroundColor: 'lightGrey'} } onClick={this.handleNewClick}>+ New...</div>

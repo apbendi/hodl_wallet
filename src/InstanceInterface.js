@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Presenters from './utils/Presenters';
 
 class InstanceInterface extends Component {
 
@@ -13,20 +14,6 @@ class InstanceInterface extends Component {
 	this.handleAmountLoseFocus = this.handleAmountLoseFocus.bind(this);
 	this.handleHodl = this.handleHodl.bind(this);
 	this.handleWithdraw = this.handleWithdraw.bind(this);
-    }
-
-    presentDate(unixDate) {
-	let date = new Date(1000*unixDate);
-	return date.toString();
-    }
-
-    presentBalance(weiBalance) {
-	if (null == weiBalance) {
-	    return "0 ETH";
-	}
-
-	let ethString = this.props.web3.fromWei(weiBalance, 'ether').toString();
-	return ethString + " ETH";
     }
 
     isNumeric(n) {
@@ -58,7 +45,7 @@ class InstanceInterface extends Component {
 
     handleHodl(event) {
 	event.preventDefault();
-	let weiDeposit = this.props.web3.toWei(this.state.depositAmount, 'ether');
+	let weiDeposit = window.web3.toWei(this.state.depositAmount, 'ether');
 	this.props.doDeposit(weiDeposit);
 	this.setState({depositAmount: 0});
     }
@@ -71,9 +58,10 @@ class InstanceInterface extends Component {
     render() {
 	return (
 	    <div>
-	      <p>Deployment Date: {this.presentDate(this.props.hodlInstance.deployDate)}</p>
-	      <p>Withdrawl Date: {this.presentDate(this.props.hodlInstance.withdrawDate)}</p>
-	      <p>Hodled balance: {this.presentBalance(this.props.hodlInstance.balance)}</p>
+	      <p>Address: {this.props.hodlInstance.address}</p>
+	      <p>Deployment Date: {Presenters.presentDate(this.props.hodlInstance.deployDate)}</p>
+	      <p>Withdrawl Date: {Presenters.presentDate(this.props.hodlInstance.withdrawDate)}</p>
+	      <p>Hodled balance: {Presenters.presentBalance(this.props.hodlInstance.balance)}</p>
 	      <form onSubmit={this.handleHodl}>
 		<label>
 		  Amount (ETH): <input type="text" value={this.state.depositAmount} onChange={this.handleAmountChange} onBlur={this.handleAmountLoseFocus}/>
