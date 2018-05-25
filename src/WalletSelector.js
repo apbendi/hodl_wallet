@@ -1,21 +1,18 @@
 import React, { Component } from 'react';
-import Presenters from './utils/Presenters';
+import WalletSelection from './WalletSelection';
 
 class WalletSelector extends Component {
 
     constructor(props) {
 	super(props);
+	this.state = { };
 
-	this.state = {
-	};
-
-	this.handleWalletClick = this.handleWalletClick.bind(this);
 	this.handleNewClick = this.handleNewClick.bind(this);
     }
 
-    handleWalletClick() {
-	// TODO: Once wallet instance is extracted it's own component, pass a function that calls with the proper index, or something?
-	this.props.udpateSelection(0);
+    handleWalletClick(address) {
+	let walletIndex = this.props.hodlWallets.findIndex( hodl => { return hodl.address === address; });
+	this.props.udpateSelection(walletIndex);
     }
 
     handleNewClick() {
@@ -26,10 +23,11 @@ class WalletSelector extends Component {
 	return (
 	    <div style={ {margin: '1em'} }>
 	      {this.props.hodlWallets
-		  .map( (hodl) => <div key={hodl.address} onClick={this.handleWalletClick} style={ {backgroundColor: 'grey'} }>
-			{Presenters.presentAddress(hodl.address)}, {Presenters.presentDate(hodl.deployDate)},
-			    {' '}{Presenters.presentDate(hodl.withdrawDate)}, {Presenters.presentBalance(hodl.balance)}
-			</div>
+		  .map( (hodl) =>
+			<WalletSelection
+			      key={hodl.address}
+			      hodl={hodl}
+			      handleClick={ address => this.handleWalletClick(address) } />
 	      )}
 		<div style={ {backgroundColor: 'lightGrey'} } onClick={this.handleNewClick}>+ New...</div>
 	    </div>
