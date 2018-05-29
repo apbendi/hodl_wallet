@@ -8,6 +8,7 @@ class WalletSelector extends Component {
 	this.state = { };
 
 	this.handleNewClick = this.handleNewClick.bind(this);
+	this.handleAdminClick = this.handleAdminClick.bind(this);
     }
 
     handleWalletClick(address) {
@@ -19,7 +20,20 @@ class WalletSelector extends Component {
 	this.props.udpateSelection(-1);
     }
 
+    handleAdminClick() {
+	this.props.udpateSelection(-2);
+    }
+
     render() {
+	var adminSelection = null;
+	if (this.props.isAdmin) {
+	    adminSelection = (
+		<div style={ {backgroundColor: 'red'} } onClick={this.handleAdminClick}>
+		  Admin
+		</div>
+	    );
+	}
+
 	return (
 	    <div style={ {margin: '1em'} }>
 	      {this.props.hodlWallets
@@ -30,6 +44,7 @@ class WalletSelector extends Component {
 			      handleClick={ address => this.handleWalletClick(address) } />
 	      )}
 		<div style={ {backgroundColor: 'lightGrey'} } onClick={this.handleNewClick}>+ New...</div>
+		{adminSelection}
 	    </div>
 	);
     }

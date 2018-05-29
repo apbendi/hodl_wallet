@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import InstanceInterface from './InstanceInterface';
 import WalletDeployer from './WalletDeployer';
 import WalletSelector from './WalletSelector';
+import AdminInterface from './AdminInterface';
 
 import HodlWalletContract from '../build/contracts/HodlWallet.json';
 import HodlWalletFactory from '../build/contracts/HodlWalletFactory.json';
@@ -33,6 +34,9 @@ class App extends Component {
 	    depositAmount: 0,
 	    hodlWallets: [],
 	    selectedHodlIndex: -1,
+	    factoryOwner: '0x0',
+	    deployFee: null,
+	    factoryBalance: 0,
 	    accounts: [],
 	    hodlFactoryInstance: null,
 	    web3: null
@@ -49,6 +53,14 @@ class App extends Component {
 	}
 
 	return this.state.hodlWallets[this.state.selectedHodlIndex];
+    }
+
+    get isAdmin() {
+	return this.state.accounts[0] === this.state.factoryOwner;
+    }
+
+    get shouldShowAdminInterface() {
+	return this.state.selectedHodlIndex === -2  && this.isAdmin; // TODO: gross magic numbers; whole idea of storing index as state needs a rethink.
     }
 
     // LIFECYCLE
@@ -88,7 +100,7 @@ class App extends Component {
 		.then( instance => {
 		    console.log(instance);
 		    this.setState({hodlFactoryInstance: instance});
-		    this.getDeployFee();
+		    this.getFactoryState();
 		    this.getPastDeploys();
 		    this.listenForDeploys();
 		})
@@ -98,14 +110,16 @@ class App extends Component {
 	});
     }
 
-    getDeployFee() {
+    getFactoryState() {
 	this.state.hodlFactoryInstance
-	    .fee
+	    .getFactoryState
 	    .call(this.state.accounts[0])
 	    .then( result => {
-		console.log(result);
-		let fee = result;
-		this.setState({deployFee: fee});
+		this.setState({
+		    factoryOwner: result[0],
+		    deployFee: result[1],
+		    factoryBalance: result[2]
+		});
 	    })
 	    .catch(error => {
 		console.log("Error fetching deployment fee: " + error);
@@ -254,12 +268,31 @@ class App extends Component {
 	    });
     }
 
+    withdrawFees() {
+	this.state.hodlFactoryInstance
+	    .withdraw
+	    .sendTransaction({from: this.state.accounts[0]})
+	    .then( txHash => {
+		console.log(txHash);
+	    })
+	    .catch( error => {
+		console.log(error);
+	    });
+    }
+
     // RENDERING
 
     render() {
 	let interfaceBody;
 
-	if (null == this.selectedHodl) {
+	if (this.shouldShowAdminInterface) {
+	    interfaceBody = (
+		<AdminInterface
+		  feeBalance={this.state.factoryBalance}
+		  doFeeWithdraw={ () => { this.withdrawFees(); } }
+		  />
+	    );
+	} else if (null === this.selectedHodl) {
 	    interfaceBody = (
 		  <WalletDeployer 
 		    fee={this.state.deployFee}
@@ -271,7 +304,6 @@ class App extends Component {
 		<div>
 		  <h2>Your HODL Wallet</h2>
 		  <InstanceInterface 
-		    //web3={this.state.web3}
 		    hodlInstance={this.selectedHodl}
 		    doDeposit={ amount => { 
 			this.deposit(amount);
@@ -294,6 +326,7 @@ class App extends Component {
 		<div className="pure-g">
 		  <div className="pure-u-1-1">
 		    <WalletSelector 
+		      isAdmin={this.isAdmin}
 		      hodlWallets={this.state.hodlWallets} 
 		      udpateSelection={ index => {
 			  this.setState({selectedHodlIndex: index});

@@ -23,6 +23,18 @@ contract HodlWalletFactory {
     emit LogDeployment(msg.sender, newWallet);
   }
 
+  function getBalance() public constant returns (uint) {
+    return address(this).balance;
+  }
+
+  function getFactoryState() public constant returns (address, uint, uint) {
+    return (owner, fee, getBalance());
+  }
+
+  function withdraw() public ownerOnly {
+    owner.transfer(getBalance());
+  }
+
   modifier ownerOnly() {
     require(msg.sender == owner);
     _;
