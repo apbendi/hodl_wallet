@@ -88,6 +88,7 @@ class App extends Component {
 		.then( instance => {
 		    console.log(instance);
 		    this.setState({hodlFactoryInstance: instance});
+		    this.getDeployFee();
 		    this.getPastDeploys();
 		    this.listenForDeploys();
 		})
@@ -95,6 +96,20 @@ class App extends Component {
 		    console.log("Error finding factory: " + error);
 		});	    
 	});
+    }
+
+    getDeployFee() {
+	this.state.hodlFactoryInstance
+	    .fee
+	    .call(this.state.accounts[0])
+	    .then( result => {
+		console.log(result);
+		let fee = result;
+		this.setState({deployFee: fee});
+	    })
+	    .catch(error => {
+		console.log("Error fetching deployment fee: " + error);
+	    });
     }
 
     getPastDeploys() {
@@ -246,7 +261,10 @@ class App extends Component {
 
 	if (null == this.selectedHodl) {
 	    interfaceBody = (
-		  <WalletDeployer doDeploy={ withdrawDate => { this.deploy(withdrawDate); } } />
+		  <WalletDeployer 
+		    fee={this.state.deployFee}
+		    doDeploy={ withdrawDate => { this.deploy(withdrawDate); } }
+		    />
 	    );
 	} else {
 	    interfaceBody = (

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 
 import DatePicker from 'react-datepicker';
 import moment from 'moment';
+import Presenters from './utils/Presenters';
 
 class WalletDeployer extends Component {
 
@@ -41,6 +42,8 @@ class WalletDeployer extends Component {
 		dateFormat="LLL"
 		minDate={moment()} 
 		/>
+	      <p />
+	      Fee: {Presenters.presentBalance(this.props.fee)}
 	      <p />
 	      <button onClick={this.handleDeploy}>Deploy</button>
 	    </div>
