@@ -199,9 +199,11 @@ class App extends Component {
     // CONTRACT ACTIONS
 
     deploy(withdrawDateUnix) {
+	let fee = this.state.web3.toWei('0.01', 'ether');
+
 	this.state.hodlFactoryInstance	
 	    .deployWallet
-	    .sendTransaction(withdrawDateUnix, {from: this.state.accounts[0]})
+	    .sendTransaction(withdrawDateUnix, {from: this.state.accounts[0], value: fee})
 	    .then( txHash => {
 		console.log(txHash);
 	    })

@@ -1,7 +1,7 @@
 pragma solidity ^0.4.19;
 
 contract HodlWallet {
-
+  
   event Deposit(uint value);
   event Withdrawl(uint date);
   
