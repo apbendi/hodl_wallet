@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import Presenters from './utils/Presenters';
+import Validators from './utils/Validators';
+import Web3Utils from './utils/Web3Utils';
 
 class InstanceInterface extends Component {
 
@@ -16,10 +18,6 @@ class InstanceInterface extends Component {
 	this.handleWithdraw = this.handleWithdraw.bind(this);
     }
 
-    isNumeric(n) {
-	return !isNaN(parseFloat(n)) && isFinite(n);
-    }
-
     isPastWithdraw() {
 	let currentUnixDate = Date.now() / 1000 + 30;
 	return currentUnixDate > this.props.hodlInstance.withdrawDate;
@@ -30,22 +28,22 @@ class InstanceInterface extends Component {
 
 	let value = event.target.value;
 
-	if ('' === value || this.isNumeric(value)) {
-	    this.setState({depositAmount: event.target.value});
+	if ('' === value || Validators.isNumeric(value)) {
+	    this.setState({depositAmount: value});
 	}
     }
 
     handleAmountLoseFocus(event) {
 	event.preventDefault();
 
-	if (!this.isNumeric(event.currentTarget.value)) {
+	if (!Validators.isNumeric(event.currentTarget.value)) {
 	    this.setState({depositAmount: 0});
 	}
     }
 
     handleHodl(event) {
 	event.preventDefault();
-	let weiDeposit = window.web3.toWei(this.state.depositAmount, 'ether');
+	let weiDeposit = Web3Utils.etherToWei(this.state.depositAmount);
 	this.props.doDeposit(weiDeposit);
 	this.setState({depositAmount: 0});
     }

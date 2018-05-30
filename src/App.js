@@ -228,11 +228,9 @@ class App extends Component {
     // CONTRACT ACTIONS
 
     deploy(withdrawDateUnix) {
-	let fee = this.state.web3.toWei('0.01', 'ether');
-
 	this.state.hodlFactoryInstance	
 	    .deployWallet
-	    .sendTransaction(withdrawDateUnix, {from: this.state.accounts[0], value: fee})
+	    .sendTransaction(withdrawDateUnix, {from: this.state.accounts[0], value: this.state.deployFee})
 	    .then( txHash => {
 		console.log(txHash);
 	    })
@@ -268,6 +266,19 @@ class App extends Component {
 	    });
     }
 
+    setFee(newFeeAmount) {
+	this.state.hodlFactoryInstance
+	    .setFee
+	    .sendTransaction(newFeeAmount, {from: this.state.accounts[0]})
+	    .then( txHash => {
+		console.log(txHash);
+	    })
+	    .catch( error => {
+		console.log("Set Fee Error: " + error);
+	    });
+	
+    }
+
     withdrawFees() {
 	this.state.hodlFactoryInstance
 	    .withdraw
@@ -288,7 +299,9 @@ class App extends Component {
 	if (this.shouldShowAdminInterface) {
 	    interfaceBody = (
 		<AdminInterface
+		  currentFee={this.state.deployFee}
 		  feeBalance={this.state.factoryBalance}
+		  doSetFee={ newFeeAmount => { this.setFee(newFeeAmount); } }
 		  doFeeWithdraw={ () => { this.withdrawFees(); } }
 		  />
 	    );
