@@ -6,9 +6,13 @@ import '../contracts/HodlWalletFactory.sol';
 
 contract TestHodlWalletFactory {
   
-  function testItDeploysWithTheDefaultFee() public {
-    HodlWalletFactory factory = HodlWalletFactory(DeployedAddresses.HodlWalletFactory());
+  function testItDeploysWithTheDefaultFeeAndUpdatesItLater() public {
+    HodlWalletFactory factory = new HodlWalletFactory();
 
-    Assert.equal(factory.fee(), 0.01 ether, "It should set the deployment fee");
+    Assert.equal(factory.fee(), 0.01 ether, "It should deploy the factory with the default fee");
+
+    factory.setFee(0.116 ether);
+
+    Assert.equal(factory.fee(), 0.116 ether, "It should update the factory deployment fee");
   }
 }
