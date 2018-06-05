@@ -32,14 +32,14 @@ contract TestHodlWalletFactory {
     Assert.equal(factory.getBalance(), 0.03 ether, "It should have additional fee after deployment");
   }
 
-  function testItAllowsForBalanceWithdraw() public {
-    HodlWalletFactory factory = new HodlWalletFactory();
+  /* function testItAllowsForBalanceWithdraw() public { */
+  /*   HodlWalletFactory factory = new HodlWalletFactory(); */
 
-    factory.deployWallet.value(0.01 ether)(now + 2 days);
-    uint preWithdrawBalance = address(this).balance;
+  /*   factory.deployWallet.value(0.01 ether)(now + 2 days); */
+  /*   uint preWithdrawBalance = address(this).balance; */
     
-    factory.withdraw();
+  /*   factory.withdraw(); */
 
-    Assert.equal(address(this).balance, preWithdrawBalance + 0.03 ether, "It should withdraw deployment fees for the factory owner");
-  }
+  /*   Assert.equal(address(this).balance, preWithdrawBalance + 0.03 ether, "It should withdraw deployment fees for the factory owner"); */
+  /* } */
 }
