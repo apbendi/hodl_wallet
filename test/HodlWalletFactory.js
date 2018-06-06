@@ -20,4 +20,19 @@ contract('HodlWalletFactory', async (accounts) => {
 
 	assert.equal(fee, newFeeAmount, "The deploy fee should be updated");
     });
+p
+    it("should deploy a wallet", async () => {
+	let instance = await HodlWalletFactory.deployed();
+	let withdrawDate = (Date.now() / 1000) + 24*60*60 + 60; // One day and one minute from now
+	let deployFee = await instance.fee.call();
+
+	let txHash =
+	    await instance
+	    .deployWallet
+	    .sendTransaction(withdrawDate, {from: accounts[0], value: deployFee});
+
+	let balance = web3.eth.getBalance(instance.address);
+
+	assert.equal(balance.toString(), deployFee.toString(), "The deploy fee should be in the factory balance");
+    });
 });
