@@ -34,10 +34,6 @@ contract('HodlWalletFactory', async (accounts) => {
 	let balance = web3.eth.getBalance(instance.address);
 
 	assert.equal(balance.toString(), deployFee.toString(), "The deploy fee should be in the factory balance");
-    });
-
-    it("should find a past wallet", async () => {
-	let instance = await HodlWalletFactory.deployed();
 
 	let getDeploys = new Promise( (resolve, reject) => {
 	    instance
