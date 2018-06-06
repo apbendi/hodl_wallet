@@ -55,4 +55,19 @@ contract('HodlWalletFactory', async (accounts) => {
 	let deploys = await getDeploys;
 	assert.equal(1, deploys.length);
     });
+
+    it("should allow the factory owner to withdraw fees", async() => {
+	let instance = await HodlWalletFactory.deployed();
+	let initOwnerBalance = web3.eth.getBalance(accounts[0]);
+	let initFactoryBalance = web3.eth.getBalance(instance.address);
+
+	await instance.withdraw.sendTransaction({from: accounts[0]});
+
+	let finalOwnerBalance = web3.eth.getBalance(accounts[0]);
+	let finalFactoryBalance = web3.eth.getBalance(instance.address);
+
+	assert.equal(0, finalFactoryBalance, "The factory balance should have been emptied");
+	assert(finalOwnerBalance > initOwnerBalance, "The factory should have received a payout");
+	assert(finalOwnerBalance < initOwnerBalance.plus(initFactoryBalance), "The final owner balance should include ppayout less transaction fees");
+    });
 });
