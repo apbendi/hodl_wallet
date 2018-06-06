@@ -20,7 +20,7 @@ contract('HodlWalletFactory', async (accounts) => {
 
 	assert.equal(fee, newFeeAmount, "The deploy fee should be updated");
     });
-p
+
     it("should deploy a wallet", async () => {
 	let instance = await HodlWalletFactory.deployed();
 	let withdrawDate = (Date.now() / 1000) + 24*60*60 + 60; // One day and one minute from now
@@ -29,10 +29,30 @@ p
 	let txHash =
 	    await instance
 	    .deployWallet
-	    .sendTransaction(withdrawDate, {from: accounts[0], value: deployFee});
+	    .sendTransaction(withdrawDate, {from: accounts[1], value: deployFee});
 
 	let balance = web3.eth.getBalance(instance.address);
 
 	assert.equal(balance.toString(), deployFee.toString(), "The deploy fee should be in the factory balance");
+    });
+
+    it("should find a past wallet", async () => {
+	let instance = await HodlWalletFactory.deployed();
+
+	let getDeploys = new Promise( (resolve, reject) => {
+	    instance
+		.LogDeployment({hodler: accounts[1]}, {fromBlock: 0, toBlock: 'latest'})
+		.get( (error, deploys) => {
+		    if (null != error) {
+			reject(error);
+			return;
+		    }
+
+		    resolve(deploys);
+		});
+	});
+
+	let deploys = await getDeploys;
+	assert.equal(1, deploys.length);
     });
 });
