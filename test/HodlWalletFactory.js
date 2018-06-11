@@ -7,7 +7,7 @@ contract('HodlWalletFactory', async (accounts) => {
 	let fee = await instance.fee.call();
 	
 	let expectedDefaultFee = web3.toWei(0.01, 'ether');
-	assert.equal(fee, expectedDefaultFee, "The default deploy fee was wrong");
+	assert(fee.eq(expectedDefaultFee), "The default deploy fee was wrong");
     });
 
     it("should allow the fee to be updated", async () => {
@@ -18,7 +18,7 @@ contract('HodlWalletFactory', async (accounts) => {
 
 	let fee = await instance.fee.call();
 
-	assert.equal(fee, newFeeAmount, "The deploy fee should be updated");
+	assert(fee.eq(newFeeAmount), "The deploy fee should be updated");
     });
 
     it("should deploy a wallet", async () => {
@@ -33,7 +33,7 @@ contract('HodlWalletFactory', async (accounts) => {
 
 	let balance = web3.eth.getBalance(instance.address);
 
-	assert.equal(balance.toString(), deployFee.toString(), "The deploy fee should be in the factory balance");
+	assert(balance.eq(deployFee), "The deploy fee should be in the factory balance");
 
 	let getDeploys = new Promise( (resolve, reject) => {
 	    instance
@@ -63,7 +63,7 @@ contract('HodlWalletFactory', async (accounts) => {
 	let finalFactoryBalance = web3.eth.getBalance(instance.address);
 
 	assert.equal(0, finalFactoryBalance, "The factory balance should have been emptied");
-	assert(finalOwnerBalance > initOwnerBalance, "The factory should have received a payout");
-	assert(finalOwnerBalance < initOwnerBalance.plus(initFactoryBalance), "The final owner balance should include ppayout less transaction fees");
+	assert(finalOwnerBalance.gt(initOwnerBalance), "The factory should have received a payout");
+	assert(finalOwnerBalance.lt(initOwnerBalance.plus(initFactoryBalance)), "The final owner balance should include payout less transaction fees");
     });
 });
