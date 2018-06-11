@@ -1,5 +1,7 @@
 var HodlWalletFactory = artifacts.require("HodlWalletFactory");
 
+// ASSERTION HELPERS
+
 let assertRevert = async promise => {
   try {
     await promise;
@@ -9,6 +11,8 @@ let assertRevert = async promise => {
     assert(revertFound, `Expected "revert", got ${error} instead`);
   }
 };
+
+// TESTS
 
 contract('HodlWalletFactory', async (accounts) => {
 
@@ -45,20 +49,7 @@ contract('HodlWalletFactory', async (accounts) => {
 
 	assert(balance.eq(deployFee), "The deploy fee should be in the factory balance");
 
-	let getDeploys = new Promise( (resolve, reject) => {
-	    instance
-		.LogDeployment({hodler: accounts[1]}, {fromBlock: 0, toBlock: 'latest'})
-		.get( (error, deploys) => {
-		    if (null != error) {
-			reject(error);
-			return;
-		    }
-
-		    resolve(deploys);
-		});
-	});
-
-	let deploys = await getDeploys;
+	let deploys = await getDeploys(instance, accounts[1]);
 	assert.equal(1, deploys.length);
     });
 
@@ -81,4 +72,21 @@ contract('HodlWalletFactory', async (accounts) => {
 	assert(finalOwnerBalance.gt(initOwnerBalance), "The factory should have received a payout");
 	assert(finalOwnerBalance.lt(initOwnerBalance.plus(initFactoryBalance)), "The final owner balance should include payout less transaction fees");
     });
+
+    // TEST HELPERS
+
+    function getDeploys(instance, hodler) {
+	return new Promise( (resolve, reject) => {
+	    instance
+		.LogDeployment({hodler: hodler}, {fromBlock: 0, toBlock: 'latest'})
+		.get( (error, deploys) => {
+		    if (null != error) {
+			reject(error);
+			return;
+		    }
+
+		    resolve(deploys);
+		});
+	});
+    }
 });
