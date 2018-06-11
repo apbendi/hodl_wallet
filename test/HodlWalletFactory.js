@@ -1,5 +1,15 @@
 var HodlWalletFactory = artifacts.require("HodlWalletFactory");
 
+let assertRevert = async promise => {
+  try {
+    await promise;
+    assert.fail('Expected revert not received');
+  } catch (error) {
+    const revertFound = error.message.search('revert') >= 0;
+    assert(revertFound, `Expected "revert", got ${error} instead`);
+  }
+};
+
 contract('HodlWalletFactory', async (accounts) => {
 
     it("should deploy with the default fee", async () => {
@@ -50,6 +60,11 @@ contract('HodlWalletFactory', async (accounts) => {
 
 	let deploys = await getDeploys;
 	assert.equal(1, deploys.length);
+    });
+
+    it("should not allow someone other than the owner to withdraw fees", async() => {
+	let instance = await HodlWalletFactory.deployed();
+	await assertRevert(instance.withdraw.sendTransaction({from: accounts[1]}));
     });
 
     it("should allow the factory owner to withdraw fees", async() => {
