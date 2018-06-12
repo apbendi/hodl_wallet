@@ -1,4 +1,5 @@
 var HodlWallet = artifacts.require("HodlWallet");
+var assertRevert = require('./helpers/assertRevert');
 
 contract ('HodlWallet', async (accounts) => {
 
@@ -31,5 +32,18 @@ contract ('HodlWallet', async (accounts) => {
 
 	assert(hodlBalance.eq(hodlAmount), "The contract balance should have been the hodl'd amount");
 	assert(finalAccountBalance.lt(initialAccountBalance), "The hodler balance should have been less the hodl'd balance");
+    });
+
+    it("should not allow someone else to deposit ETH", async() => {
+	let initialContractBalance = web3.eth.getBalance(deployedInstance.address);
+
+	let notHodler = accounts[1];
+	let hodlAmount = web3.toWei(1.16, 'ether');
+
+	await assertRevert(deployedInstance.hodlMe.sendTransaction({from: notHodler, value: hodlAmount}));
+
+	let finalContractBalance = web3.eth.getBalance(deployedInstance.address);
+
+	assert(initialContractBalance.eq(finalContractBalance), "The contract balance should not have changed");
     });
 });

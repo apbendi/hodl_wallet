@@ -1,16 +1,5 @@
 var HodlWalletFactory = artifacts.require("HodlWalletFactory");
-
-// ASSERTION HELPERS
-
-let assertRevert = async promise => {
-  try {
-    await promise;
-    assert.fail('Expected revert not received');
-  } catch (error) {
-    const revertFound = error.message.search('revert') >= 0;
-    assert(revertFound, `Expected "revert", got ${error} instead`);
-  }
-};
+var assertRevert = require('./helpers/assertRevert');
 
 // TESTS
 
