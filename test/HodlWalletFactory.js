@@ -1,5 +1,6 @@
 var HodlWalletFactory = artifacts.require("HodlWalletFactory");
 var assertRevert = require('./helpers/assertRevert');
+var TimeUtils = require('./helpers/TimeUtils');
 
 // TESTS
 
@@ -26,7 +27,7 @@ contract('HodlWalletFactory', async (accounts) => {
 
     it("should deploy a wallet", async () => {
 	let instance = await HodlWalletFactory.deployed();
-	let withdrawDate = (Date.now() / 1000) + 24*60*60 + 60; // One day and one minute from now
+	let withdrawDate = await TimeUtils.latestTimeWithOffset(24*60*60 + 60); // One day and one minute from now
 	let deployFee = await instance.fee.call();
 
 	let txHash =
