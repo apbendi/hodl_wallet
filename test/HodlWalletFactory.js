@@ -8,7 +8,7 @@ contract('HodlWalletFactory', async (accounts) => {
 
     it("should deploy with the default fee", async () => {
 	let instance = await HodlWalletFactory.deployed();
-	let fee = await instance.fee.call();
+	let [_owner, fee, _feeBalance] = await instance.getFactoryState.call();
 	
 	let expectedDefaultFee = web3.toWei(0.01, 'ether');
 	assert(fee.eq(expectedDefaultFee), "The default deploy fee was wrong");
@@ -20,7 +20,7 @@ contract('HodlWalletFactory', async (accounts) => {
 	let newFeeAmount = web3.toWei(0.116, 'ether');
 	await instance.setFee.sendTransaction(newFeeAmount, {from: accounts[0]});
 
-	let fee = await instance.fee.call();
+	let [owner, fee, feeBalance] = await instance.getFactoryState.call();
 
 	assert(fee.eq(newFeeAmount), "The deploy fee should be updated");
     });
@@ -28,7 +28,7 @@ contract('HodlWalletFactory', async (accounts) => {
     it("should deploy a wallet", async () => {
 	let instance = await HodlWalletFactory.deployed();
 	let withdrawDate = await TimeUtils.latestTimeWithOffset(24*60*60 + 60); // One day and one minute from now
-	let deployFee = await instance.fee.call();
+	let [_owner, deployFee, _feeBalance] = await instance.getFactoryState.call();
 
 	let txHash =
 	    await instance

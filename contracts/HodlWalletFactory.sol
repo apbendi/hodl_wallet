@@ -5,7 +5,7 @@ import "./HodlWallet.sol";
 contract HodlWalletFactory {
 
   address owner;
-  uint public fee;
+  uint fee;
 
   event LogDeployment(address indexed hodler, address wallet);
 
@@ -23,16 +23,12 @@ contract HodlWalletFactory {
     emit LogDeployment(msg.sender, newWallet);
   }
 
-  function getBalance() public constant returns (uint) {
-    return address(this).balance;
-  }
-
   function getFactoryState() public constant returns (address, uint, uint) {
-    return (owner, fee, getBalance());
+    return (owner, fee, address(this).balance);
   }
 
   function withdraw() public ownerOnly {
-    owner.transfer(getBalance());
+    owner.transfer(address(this).balance);
   }
 
   modifier ownerOnly() {
