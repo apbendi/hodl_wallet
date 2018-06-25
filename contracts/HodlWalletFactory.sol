@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.24;
 
 import "./HodlWallet.sol";
 
@@ -9,7 +9,7 @@ contract HodlWalletFactory {
 
   event LogDeployment(address indexed hodler, address wallet);
 
-  function HodlWalletFactory() public {
+  constructor() public {
     owner = msg.sender;
     fee = 0.01 ether;
   }

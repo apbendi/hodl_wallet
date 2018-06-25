@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.24;
 
 contract HodlWallet {
   
@@ -9,7 +9,7 @@ contract HodlWallet {
   uint withdrawDate;
   address hodler;
     
-  function HodlWallet(uint _withdrawDate, address _hodler) public {
+  constructor(uint _withdrawDate, address _hodler) public {
     require(_withdrawDate > now + 10 minutes);
 
     deployDate = now;
