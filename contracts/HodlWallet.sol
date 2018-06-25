@@ -31,17 +31,17 @@ contract HodlWallet {
   }
     
   modifier isHodler() {
-    require(msg.sender == hodler);
+    require(msg.sender == hodler, "Caller was not the hodler");
     _;
   }
     
   modifier isBeforeWithdraw() {
-    require(now < withdrawDate);
+    require(now < withdrawDate, "Called after the withdraw date");
     _;
   }
     
   modifier isAfterWithdraw() {
-    require(now > withdrawDate);
+    require(now > withdrawDate, "Called before teh withdraw date");
     _;
   }
 }

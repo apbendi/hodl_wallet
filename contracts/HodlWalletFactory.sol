@@ -32,12 +32,12 @@ contract HodlWalletFactory {
   }
 
   modifier ownerOnly() {
-    require(msg.sender == owner);
+    require(msg.sender == owner, "Caller was not the owner");
     _;
   }
 
   modifier paysFee() {
-    require(msg.value == fee);
+    require(msg.value == fee, "Caller did not pay the fee");
     _;
   }
 }
