@@ -17,24 +17,8 @@ contract HodlWallet {
     withdrawDate = _withdrawDate;
   }
 
-  function getHodler() public constant returns(address) {
-    return hodler;
-  }
-    
-  function getDeployDate() public constant returns(uint) {
-    return deployDate;
-  }
-    
-  function getWithdrawDate() public constant returns(uint) {
-    return withdrawDate;
-  }
-    
-  function getBalance() public constant returns(uint) {
-    return address(this).balance;
-  }
-
-  function getAllState() public constant returns (uint, uint, uint) {
-    return (deployDate, withdrawDate, getBalance());
+  function getWalletState() public constant returns (address, uint, uint, uint) {
+    return (hodler, deployDate, withdrawDate, address(this).balance);
   }
     
   function hodlMe() public isHodler isBeforeWithdraw payable {
@@ -42,7 +26,7 @@ contract HodlWallet {
   }
     
   function withdraw() public isHodler isAfterWithdraw {
-    hodler.transfer(getBalance());
+    hodler.transfer(address(this).balance);
     emit Withdrawl(now);
   }
     

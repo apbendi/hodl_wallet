@@ -16,8 +16,7 @@ contract ('HodlWallet', async (accounts) => {
 	let sendWithdrawDate = await TimeUtils.latestTimeWithOffset(WithdrawOffset); // One day and one minute in the future
 	deployedInstance = await HodlWallet.new(sendWithdrawDate, accounts[0]);
 
-	let hodler = await deployedInstance.getHodler.call();
-	let [_deployDate, withdrawDate, balance] = await deployedInstance.getAllState.call();
+	let [hodler, _deployDate, withdrawDate, balance] = await deployedInstance.getWalletState.call();
 	
 	assert.equal(hodler, accounts[0], "Hodler should be the deployer");
 	assert(balance.eq(0), "Hodl'd balance should be 0 at deploy");

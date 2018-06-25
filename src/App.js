@@ -177,13 +177,13 @@ class App extends Component {
 	let contract = this.state.hodlWallets[index].contract;
 
 	contract
-	    .getAllState
+	    .getWalletState
 	    .call(this.state.accounts[0])
 	    .then( result => {
 		let wallets = this.state.hodlWallets.slice();
-		wallets[index].deployDate = result[0].c[0];
-		wallets[index].withdrawDate = result[1].c[0];
-		wallets[index].balance = result[2];
+		wallets[index].deployDate = result[1].c[0];
+		wallets[index].withdrawDate = result[2].c[0];
+		wallets[index].balance = result[3];
 		return this.setState({hodlWallets: wallets});
 	    })
 	    .catch( error => {
